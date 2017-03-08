@@ -8,3 +8,4 @@ lib
 .cache
 .coverage
 .tox
+docs/build
