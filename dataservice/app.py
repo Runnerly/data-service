@@ -2,7 +2,7 @@ import os
 from werkzeug.exceptions import HTTPException
 from flakon import create_app
 from flakon.util import error_handling
-from flask import request, abort
+from flask import request, abort, g
 
 import jwt
 
@@ -47,11 +47,12 @@ def authenticate(app, request):
     pub_key = app.config['pub_key']
     try:
         token = key[1]
-        token = jwt.decode(token, pub_key)
+        token = jwt.decode(token, pub_key, audience='runnerly.io')
     except Exception as e:
         return abort(401)
 
-    # we have the token.
+    # we have the token ~ copied into the globals
+    g.jwt_token = token
 
 
 if __name__ == '__main__':

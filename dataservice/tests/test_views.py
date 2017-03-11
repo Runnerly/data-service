@@ -14,10 +14,14 @@ def create_token(data):
     return jwt.encode(data, _KEY, algorithm='RS512')
 
 
+_TOKEN = {'iss': 'runnerly',
+          'aud': 'runnerly.io'}
+
+
 class TestViews(unittest.TestCase):
     def setUp(self):
         self.app = _TestApp(app)
-        self.token = create_token({}).decode('ascii')
+        self.token = create_token(_TOKEN).decode('ascii')
         self.headers = {'Authorization': 'Bearer ' + self.token}
 
     def test_one(self):
