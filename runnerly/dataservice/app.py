@@ -1,8 +1,9 @@
 import os
 from werkzeug.exceptions import HTTPException
-from flakon import create_app
+from flakon import create_app as _create_app
 from flakon.util import error_handling
 from flask import request, abort, g
+from flask_cors import CORS
 
 import jwt
 
@@ -13,16 +14,24 @@ from .database import db
 _HERE = os.path.dirname(__file__)
 os.environ['TESTDIR'] = os.path.join(_HERE, 'tests')
 _SETTINGS = os.path.join(_HERE, 'settings.ini')
-app = create_app(blueprints=blueprints, settings=_SETTINGS)
 
 
-with open(app.config['pub_key']) as f:
-    app.config['pub_key'] = f.read()
+def create_app(settings=None):
+    if settings is None:
+        settings = _SETTINGS
 
+    app = _create_app(blueprints=blueprints, settings=settings)
 
-@app.before_request
-def before_req():
-    authenticate(app, request)
+    with open(app.config['pub_key']) as f:
+        app.config['pub_key'] = f.read()
+
+    CORS(app)
+
+    @app.before_request
+    def before_req():
+        authenticate(app, request)
+
+    return app
 
 
 def _400(desc):
@@ -53,9 +62,3 @@ def authenticate(app, request):
 
     # we have the token ~ copied into the globals
     g.jwt_token = token
-
-
-if __name__ == '__main__':
-    db.init_app(app)
-    db.create_all(app=app)
-    app.run()

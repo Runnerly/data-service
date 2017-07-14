@@ -26,4 +26,4 @@ test: build test_dependencies
 	$(BIN)/tox
 
 run:
-	FLASK_APP=tokendealer bin/flask run
+	FLASK_APP=dataservice/app.py bin/flask run
