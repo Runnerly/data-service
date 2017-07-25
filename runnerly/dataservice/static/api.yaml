@@ -8,6 +8,44 @@ info:
   version: 0.1.0
 basePath: /api
 paths:
+    /runs/{runner_id}/{year}/{month}:
+      get:
+       operationId: getRuns
+       description: Get Runs
+       produces:
+       - application/json
+       parameters:
+          - name: runner_id
+            in: path
+            description: ID of Runner
+            required: true
+            type: integer
+          - name: year
+            in: path
+            description: Year of runs to return
+            required: true
+            type: integer
+          - name: month
+            in: path
+            description: Months of runs to return
+            required: true
+            type: integer
+       responses:
+          '200':
+            description: List of runs
+    /add_runs:
+      post:
+        operationId: addRuns
+        description: Adds runs
+        produces:
+        - application/json
+        responses:
+          '200':
+            description: List of runs ids
+            schema:
+                type: array
+                items:
+                    type: integer
     /users:
       get:
         operationId: getUsers

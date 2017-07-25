@@ -1,4 +1,6 @@
 # encoding: utf8
+import os
+from datetime import datetime
 from decimal import Decimal
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
@@ -23,7 +25,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_anonymous = False
 
-    def to_json(self):
+    def to_json(self, secure=False):
         res = {}
         for attr in ('id', 'email', 'firstname', 'lastname', 'age', 'weight',
                      'max_hr', 'rest_hr', 'vo2max'):
@@ -31,6 +33,8 @@ class User(db.Model):
             if isinstance(value, Decimal):
                 value = float(value)
             res[attr] = value
+        if secure:
+            res['strava_token'] = self.strava_token
         return res
 
     def get_id(self):
@@ -40,6 +44,8 @@ class User(db.Model):
 class Run(db.Model):
     __tablename__ = 'run'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.Unicode(128))
+    description = db.Column(db.Unicode(512))
     strava_id = db.Column(db.Integer)
     distance = db.Column(db.Float)
     start_date = db.Column(db.DateTime)
@@ -49,6 +55,18 @@ class Run(db.Model):
     total_elevation_gain = db.Column(db.Float)
     runner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     runner = relationship('User', foreign_keys='Run.runner_id')
+
+    def to_json(self):
+        res = {}
+        for attr in ('id', 'strava_id', 'distance', 'start_date',
+                     'elapsed_time', 'average_speed', 'average_heartrate',
+                     'total_elevation_gain', 'runner_id', 'title',
+                     'description'):
+            value = getattr(self, attr)
+            if isinstance(value, datetime):
+                value = value.timestamp()
+            res[attr] = value
+        return res
 
 
 def init_database():
@@ -65,5 +83,6 @@ def init_database():
     tarek.max_hr = 192
     tarek.rest_hr = 47
     tarek.vo2max = 63
+    tarek.strava_token = os.environ.get('STRAVA_TOKEN')
     db.session.add(tarek)
     db.session.commit()
