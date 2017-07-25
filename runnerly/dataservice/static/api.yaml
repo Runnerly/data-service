@@ -8,10 +8,10 @@ info:
   version: 0.1.0
 basePath: /api
 paths:
-    /user_ids:
+    /users:
       get:
-        operationId: getUserIds
-        description: Returns a list of ids
+        operationId: getUsers
+        description: Returns a list of users
         produces:
         - application/json
         responses:

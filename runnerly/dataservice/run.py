@@ -5,7 +5,8 @@ import signal
 from chaussette.server import make_server
 from werkzeug.serving import run_with_reloader
 
-from .app import create_app
+from runnerly.dataservice.app import create_app
+from runnerly.dataservice.database import db, init_database
 
 
 def _quit(signal, frame):
@@ -30,18 +31,17 @@ def main(args=sys.argv[1:]):
     signal.signal(signal.SIGINT, _quit)
     signal.signal(signal.SIGTERM, _quit)
 
-    def runner():
-        if args.fd is not None:
-            # use chaussette
-            httpd = make_server(app, host='fd://%d' % args.fd)
-            httpd.serve_forever()
-        else:
-            app.run(debug=debug, host=host, port=port)
+    db.init_app(app)
+    db.app = app
+    db.create_all(app=app)
+    init_database()
 
-    if not debug:
-        runner()
+    if args.fd is not None:
+        # use chaussette
+        httpd = make_server(app, host='fd://%d' % args.fd)
+        httpd.serve_forever()
     else:
-        run_with_reloader(runner)
+        app.run(debug=debug, host=host, port=port, use_reloader=debug)
 
 
 if __name__ == "__main__":

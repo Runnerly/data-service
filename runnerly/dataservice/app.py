@@ -29,7 +29,8 @@ def create_app(settings=None):
 
     @app.before_request
     def before_req():
-        authenticate(app, request)
+        if app.config.get('NEED_TOKEN', True):
+            authenticate(app, request)
 
     return app
 

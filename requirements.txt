@@ -4,3 +4,4 @@ flask_webtest
 cryptography
 sqlalchemy
 flask_sqlalchemy
+chaussette

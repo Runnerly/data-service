@@ -1,4 +1,5 @@
 # encoding: utf8
+from decimal import Decimal
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 
@@ -22,6 +23,16 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_anonymous = False
 
+    def to_json(self):
+        res = {}
+        for attr in ('id', 'email', 'firstname', 'lastname', 'age', 'weight',
+                     'max_hr', 'rest_hr', 'vo2max'):
+            value = getattr(self, attr)
+            if isinstance(value, Decimal):
+                value = float(value)
+            res[attr] = value
+        return res
+
     def get_id(self):
         return self.id
 
@@ -38,3 +49,21 @@ class Run(db.Model):
     total_elevation_gain = db.Column(db.Float)
     runner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     runner = relationship('User', foreign_keys='Run.runner_id')
+
+
+def init_database():
+    exists = db.session.query(User).filter(User.email == 'tarek@ziade.org')
+    if exists.all() != []:
+        return
+
+    tarek = User()
+    tarek.email = 'tarek@ziade.org'
+    tarek.firstname = 'Tarek'
+    tarek.lastname = 'Ziadé'
+    tarek.age = 40
+    tarek.weight = 58
+    tarek.max_hr = 192
+    tarek.rest_hr = 47
+    tarek.vo2max = 63
+    db.session.add(tarek)
+    db.session.commit()
